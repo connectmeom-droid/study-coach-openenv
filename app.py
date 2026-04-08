@@ -11,7 +11,7 @@ def run_env():
     return {"output": result.stdout}
 
 # 🔥 REQUIRED ENDPOINT
-@app.get("/reset")
+@app.post("/reset")
 def reset_env():
     state = env.reset(1)
     return {"state": state}
