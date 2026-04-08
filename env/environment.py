@@ -1,70 +1,54 @@
-from env.tasks import get_easy_task, get_medium_task, get_hard_task
-from env.graders import grade_easy, grade_medium, grade_hard
-import random
+def safe_reward(r):
+    eps = 1e-6
+    r = float(r)
+
+    # squash strictly into (0,1)
+    r = max(eps, min(r, 1 - eps))
+
+    return r
 
 
-class StudyEnv:
-    def __init__(self):
-        self.current_task = None
-        self.state_data = None
+def grade_easy(state, action):
+    reward = 0.2
 
-    def reset(self, task_id=1):
-        if task_id == 1:
-            self.current_task = get_easy_task()
-        elif task_id == 2:
-            self.current_task = get_medium_task()
-        elif task_id == 3:
-            self.current_task = get_hard_task()
-        else:
-            raise ValueError("Invalid task_id")
+    if action.get(state["weak_subject"], 0) >= 2:
+        reward += 0.3
 
-        self.state_data = {
-            "hours_available": random.randint(4, 10),
-            "weak_subject": random.choice(["Physics", "Math", "Chemistry"])
-        }
+    if sum(action.values()) == state["hours_available"]:
+        reward += 0.3
 
-        if task_id == 2:
-            self.state_data["previous_score"] = round(random.uniform(0.3, 0.7), 2)
+    return safe_reward(reward)
 
-        if task_id == 3:
-            self.state_data["history"] = [
-                round(random.uniform(0.3, 0.7), 2) for _ in range(3)
-            ]
 
-        return self.state_data
+def grade_medium(state, action):
+    reward = 0.2
 
-    def step(self, action):
-        try:
-            if self.current_task["task_id"] == 1:
-                reward = grade_easy(self.state_data, action)
+    if action.get(state["weak_subject"], 0) >= 3:
+        reward += 0.3
 
-            elif self.current_task["task_id"] == 2:
-                reward = grade_medium(self.state_data, action)
+    if state.get("previous_score", 1) < 0.5:
+        if action.get(state["weak_subject"], 0) >= 3:
+            reward += 0.2
 
-            elif self.current_task["task_id"] == 3:
-                reward = grade_hard(self.state_data, action)
+    if sum(action.values()) == state["hours_available"]:
+        reward += 0.2
 
-            else:
-                reward = 0.5
+    return safe_reward(reward)
 
-        except Exception as e:
-            print("STEP ERROR:", str(e))
-            reward = 0.5
 
-    # 🔥 FINAL SAFETY CLAMP (CRITICAL)
-        eps = 1e-6
-        reward = float(reward)
+def grade_hard(state, action):
+    reward = 0.2
 
-        reward = max(eps, min(reward, 1 - eps))
+    history = state.get("history", [])
 
-        if reward <= 0.0:
-            reward = 0.01
-        elif reward >= 1.0:
-            reward = 0.99
+    if len(history) > 0 and sum(history)/len(history) < 0.6:
+        if action.get(state["weak_subject"], 0) >= 3:
+            reward += 0.2
 
-        done = True
+    if sum(action.values()) == state["hours_available"]:
+        reward += 0.2
 
-        return self.state_data, reward, done, {}
+    if all(h < 0.7 for h in history):
+        reward += 0.2
 
-    def state(self):
-        return self.state_data
+    return safe_reward(reward)
