@@ -1,9 +1,17 @@
-def safe_reward(reward):
-    if reward <= 0.0:
+def safe_reward(r):
+    r = float(r)
+
+    if r <= 0:
         return 0.01
-    if reward >= 1.0:
+    if r >= 1:
         return 0.99
-    return round(reward, 4)
+
+    if r >= 0.999:
+        return 0.99
+    if r <= 0.001:
+        return 0.01
+
+    return r
 
 
 def grade_easy(state, action):
