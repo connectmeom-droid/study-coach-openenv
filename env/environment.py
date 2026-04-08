@@ -45,11 +45,22 @@ class StudyEnv:
                 reward = grade_hard(self.state_data, action)
 
             else:
-                reward = 0.01
+                reward = 0.5
 
         except Exception as e:
             print("STEP ERROR:", str(e))
-            reward = 0.01  # safe fallback
+            reward = 0.5
+
+    # 🔥 FINAL SAFETY CLAMP (CRITICAL)
+        reward = float(reward)
+
+        if reward <= 0.0:
+            reward = 0.01
+        elif reward >= 1.0:
+            reward = 0.99
+
+    # extra safety for weird floats
+        reward = round(reward, 4)
 
         done = True
 
