@@ -52,15 +52,15 @@ class StudyEnv:
             reward = 0.5
 
     # 🔥 FINAL SAFETY CLAMP (CRITICAL)
+        eps = 1e-6
         reward = float(reward)
+
+        reward = max(eps, min(reward, 1 - eps))
 
         if reward <= 0.0:
             reward = 0.01
         elif reward >= 1.0:
             reward = 0.99
-
-    # extra safety for weird floats
-        reward = round(reward, 4)
 
         done = True
 
