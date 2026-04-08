@@ -1,5 +1,4 @@
 from env.tasks import get_easy_task, get_medium_task, get_hard_task
-from env.graders import grade_easy, grade_medium, grade_hard
 import random
 
 
@@ -35,38 +34,52 @@ class StudyEnv:
 
     def step(self, action):
         try:
-            if self.current_task["task_id"] == 1:
-                reward = grade_easy(self.state_data, action)
+            reward = 0.2  # base reward (never zero)
 
-            elif self.current_task["task_id"] == 2:
-                reward = grade_medium(self.state_data, action)
+            total_hours = sum(action.values())
 
-            elif self.current_task["task_id"] == 3:
-                reward = grade_hard(self.state_data, action)
+            # ✅ Check total hours match
+            if total_hours == self.state_data["hours_available"]:
+                reward += 0.3
 
-            else:
-                reward = 0.5
+            # ✅ Check weak subject priority
+            weak = self.state_data["weak_subject"]
+            if action.get(weak, 0) >= 2:
+                reward += 0.3
+
+            # ✅ Extra logic for harder tasks
+            if self.current_task["task_id"] == 2:
+                if self.state_data.get("previous_score", 1) < 0.5:
+                    if action.get(weak, 0) >= 3:
+                        reward += 0.1
+
+            if self.current_task["task_id"] == 3:
+                history = self.state_data.get("history", [])
+                if len(history) > 0 and sum(history)/len(history) < 0.6:
+                    reward += 0.1
+
+            # 🔥 FINAL STRICT CLAMP (ABSOLUTE GUARANTEE)
+            reward = float(reward)
+
+            if reward <= 0:
+                reward = 0.01
+            elif reward >= 1:
+                reward = 0.99
+
+            # prevent float edge cases
+            if reward >= 0.999:
+                reward = 0.99
+            if reward <= 0.001:
+                reward = 0.01
 
         except Exception as e:
             print("STEP ERROR:", str(e))
             reward = 0.5
 
-    # 🔥 FINAL SAFETY CLAMP (CRITICAL)
-        reward = float(reward)
-
-
-        if reward <= 0.0:
-            reward = 0.01
-        elif reward >= 1.0:
-            reward = 0.99
-
-        if reward >= 0.999:
-             reward = 0.99
-        if reward <= 0.001:
-             reward = 0.01
         done = True
-
+        print("FINAL REWARD SENT:", reward)
         return self.state_data, reward, done, {}
 
     def state(self):
         return self.state_data
+    
