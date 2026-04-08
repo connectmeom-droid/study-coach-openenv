@@ -9,3 +9,6 @@ dependencies = [
     "uvicorn",
     "huggingface_hub"
 ]
+
+[project.scripts]
+server = "server.app:run"
