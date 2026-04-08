@@ -1,0 +1,28 @@
+name: study-coach-env
+version: 1.0
+
+environment:
+  entry_point: env.environment:StudyEnv
+
+tasks:
+  - id: 1
+    description: Easy task - basic study planning
+  - id: 2
+    description: Medium task - adaptive planning
+  - id: 3
+    description: Hard task - long-term optimization
+
+observation_space:
+  type: dict
+  fields:
+    hours_available: int
+    weak_subject: str
+
+action_space:
+  type: dict
+  fields:
+    Physics: int
+    Math: int
+    Chemistry: int
+
+reward_range: [0.0, 1.0]
