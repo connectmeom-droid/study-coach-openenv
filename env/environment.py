@@ -18,13 +18,11 @@ class StudyEnv:
         else:
             raise ValueError("Invalid task_id")
 
-        # 🔥 UPGRADE: Dynamic + Personalized State
         self.state_data = {
             "hours_available": random.randint(4, 10),
             "weak_subject": random.choice(["Physics", "Math", "Chemistry"])
         }
 
-        # Add extra fields for harder tasks
         if task_id == 2:
             self.state_data["previous_score"] = round(random.uniform(0.3, 0.7), 2)
 
@@ -36,16 +34,22 @@ class StudyEnv:
         return self.state_data
 
     def step(self, action):
-        reward = 0.0
+        try:
+            if self.current_task["task_id"] == 1:
+                reward = grade_easy(self.state_data, action)
 
-        if self.current_task["task_id"] == 1:
-            reward = grade_easy(self.state_data, action)
+            elif self.current_task["task_id"] == 2:
+                reward = grade_medium(self.state_data, action)
 
-        elif self.current_task["task_id"] == 2:
-            reward = grade_medium(self.state_data, action)
+            elif self.current_task["task_id"] == 3:
+                reward = grade_hard(self.state_data, action)
 
-        elif self.current_task["task_id"] == 3:
-            reward = grade_hard(self.state_data, action)
+            else:
+                reward = 0.01
+
+        except Exception as e:
+            print("STEP ERROR:", str(e))
+            reward = 0.01  # safe fallback
 
         done = True
 
