@@ -1,0 +1,11 @@
+[project]
+name = "study-coach-env"
+version = "0.1.0"
+description = "OpenEnv study planning environment"
+authors = [{name = "Your Name"}]
+dependencies = [
+    "openenv-core",
+    "fastapi",
+    "uvicorn",
+    "huggingface_hub"
+]
