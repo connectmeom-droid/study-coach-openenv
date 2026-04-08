@@ -5,8 +5,8 @@ import json
 
 # Initialize LLM client (VERY IMPORTANT)
 client = OpenAI(
-    base_url=os.environ["API_BASE_URL"],
-    api_key=os.environ["API_KEY"]
+    base_url=os.getenv("API_BASE_URL"),
+    api_key=os.getenv("API_KEY")
 )
 
 def get_action_from_llm(state):
@@ -26,17 +26,22 @@ Generate a study plan in JSON format like:
 Total hours must match available time.
 """
 
-    response = client.chat.completions.create(
-        model=os.environ["MODEL_NAME"],
-        messages=[{"role": "user", "content": prompt}]
-    )
-
-    output = response.choices[0].message.content
-
     try:
+        model_name = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
+
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        output = response.choices[0].message.content
+
         action = json.loads(output)
-    except:
-        # fallback if parsing fails
+
+    except Exception as e:
+        print("LLM ERROR:", str(e))
+
+        # fallback action (VERY IMPORTANT)
         action = {
             "Physics": 3,
             "Math": 2,
