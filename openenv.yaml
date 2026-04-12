@@ -25,4 +25,5 @@ action_space:
     Math: int
     Chemistry: int
 
-reward_range: [0.0, 1.0]
+# 🔥 FIXED RANGE (STRICT)
+reward_range: [0.01, 0.99]
