@@ -8,29 +8,19 @@ class StudyEnv:
         self.state_data = None
 
     def reset(self, task_id=1):
-        if task_id == 1:
-            self.current_task = get_easy_task()
-        elif task_id == 2:
-            self.current_task = get_medium_task()
-        elif task_id == 3:
-            self.current_task = get_hard_task()
-        else:
-            raise ValueError("Invalid task_id")
+      if task_id == 1:
+        self.current_task = get_easy_task()
+      elif task_id == 2:
+        self.current_task = get_medium_task()
+      elif task_id == 3:
+        self.current_task = get_hard_task()
+      else:
+        raise ValueError("Invalid task_id")
 
-        self.state_data = {
-            "hours_available": random.randint(4, 10),
-            "weak_subject": random.choice(["Physics", "Math", "Chemistry"])
-        }
+    # 🔥 USE TASK STATE EXACTLY (NO MODIFICATION)
+      self.state_data = self.current_task["state"].copy()
 
-        if task_id == 2:
-            self.state_data["previous_score"] = round(random.uniform(0.3, 0.7), 2)
-
-        if task_id == 3:
-            self.state_data["history"] = [
-                round(random.uniform(0.3, 0.7), 2) for _ in range(3)
-            ]
-
-        return self.state_data
+      return self.state_data
 
     def step(self, action):
         try:
